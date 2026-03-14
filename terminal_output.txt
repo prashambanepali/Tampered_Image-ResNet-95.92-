@@ -1,0 +1,207 @@
+(base) PS C:\Tampered_9channel> python -u "c:\Tampered_9channel\precompute_maps.py"
+Source  : C:\Tampered_9channel\raw
+Output  : C:\Tampered_9channel\Features1
+Workers : 10
+ELA     : multi-scale q=(60, 75, 85, 95)  (percentile norm, RGB 3ch)
+Noise   : 3-channel RGB PNG
+          R = gaussian_residual   (sigma=1.5 Gaussian high-pass)
+          G = srm_linear_residual (5x5 SRM linear kernel)
+          B = srm_edge_residual   (5x5 SRM ring/edge kernel)
+Input channels total: RGB(3) + ELA(3) + Noise(3) = 9
+
+Processing: authentic  (15000 images)
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15000/15000 [13:08<00:00, 19.02img/s]
+
+Processing: copy_move  (15000 images)
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15000/15000 [01:38<00:00, 152.45img/s]
+
+Processing: enhancement  (15000 images)
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15000/15000 [01:37<00:00, 153.69img/s]
+
+Processing: removal_inpainting  (15000 images)
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15000/15000 [01:36<00:00, 156.19img/s]
+
+Processing: splicing  (15000 images)
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 15000/15000 [01:38<00:00, 152.40img/s]
+
+─── Features Summary ───
+  authentic             rgb=15000  ela=15000  noise=15000  ✓
+  copy_move             rgb=15000  ela=15000  noise=15000  ✓
+  enhancement           rgb=15000  ela=15000  noise=15000  ✓
+  removal_inpainting    rgb=15000  ela=15000  noise=15000  ✓
+  splicing              rgb=15000  ela=15000  noise=15000  ✓
+
+Done. Features saved to: C:\Tampered_9channel\Features1/
+Noise maps: 3-channel RGB PNG  (R=gaussian | G=srm_linear | B=srm_edge)
+
+Next step: run  python split_dataset.py
+(base) PS C:\Tampered_9channel> conda activate tf
+(tf) PS C:\Tampered_9channel> python -u "c:\Tampered_9channel\split_dataset.py"
+Features : C:\Tampered_9channel\Features1
+Output   : C:\Tampered_9channel\dataset
+Ratio    : train=0.8  val=0.1  test=0.1  (seed=42)
+
+  authentic             total=15000
+    train: 12000  →  dataset\train\authentic\index.txt
+    val  :  1500  →  dataset\val\authentic\index.txt
+    test :  1500  →  dataset\test\authentic\index.txt
+
+  copy_move             total=15000
+    train: 12000  →  dataset\train\copy_move\index.txt
+    val  :  1500  →  dataset\val\copy_move\index.txt
+    test :  1500  →  dataset\test\copy_move\index.txt
+
+  enhancement           total=15000
+    train: 12000  →  dataset\train\enhancement\index.txt
+    val  :  1500  →  dataset\val\enhancement\index.txt
+    test :  1500  →  dataset\test\enhancement\index.txt
+
+  removal_inpainting    total=15000
+    train: 12000  →  dataset\train\removal_inpainting\index.txt
+    val  :  1500  →  dataset\val\removal_inpainting\index.txt
+    test :  1500  →  dataset\test\removal_inpainting\index.txt
+
+  splicing              total=15000
+    train: 12000  →  dataset\train\splicing\index.txt
+    val  :  1500  →  dataset\val\splicing\index.txt
+    test :  1500  →  dataset\test\splicing\index.txt
+
+─── Split Summary ───
+  Class                   train      val     test    total
+  --------------------------------------------------------
+  authentic               12000     1500     1500    15000
+  copy_move               12000     1500     1500    15000
+  enhancement             12000     1500     1500    15000
+  removal_inpainting      12000     1500     1500    15000
+  splicing                12000     1500     1500    15000
+  --------------------------------------------------------
+  TOTAL                   60000     7500     7500    75000
+
+Done. Re-split anytime: edit SPLITS, delete dataset/, re-run.
+Next: python train.py
+(tf) PS C:\Tampered_9channel> python -u "c:\Tampered_9channel\train.py"
+Device: cuda
+GPU: NVIDIA GeForce RTX 4060 Laptop GPU  VRAM: 8.6 GB
+[Dataset:train]  total=60000  channels=9 (RGB+ELA+Noise3ch)
+  authentic           : 12000
+  copy_move           : 12000
+  enhancement         : 12000
+  removal_inpainting  : 12000
+  splicing            : 12000
+[Dataset:val]  total=7500  channels=9 (RGB+ELA+Noise3ch)
+  authentic           : 1500
+  copy_move           : 1500
+  enhancement         : 1500
+  removal_inpainting  : 1500
+  splicing            : 1500
+Params total: 24.2M  Trainable: 24.2M
+
+================================================================================
+9-channel model: RGB(3) + ELA(3) + Noise(3)
+Noise channels : gaussian_residual | srm_linear_residual | srm_edge_residual
+Anti-bias      : MixUp + CutMix + DropBlock + JPEG-domain-rand + SWA + TTA
+================================================================================
+
+Epoch 1/40: 100%|██████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [10:37<00:00,  2.94it/s, acc=0.1983, loss=1.4005, lr=9.33e-05] 
+Epoch 001 | Train Loss: 1.5134  Train Acc: 0.1983 | Val Loss:   1.4730  Val Acc:   0.2000
+  ✓ Saved best model  (val_acc=0.2000)
+Epoch 2/40: 100%|██████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [07:22<00:00,  4.24it/s, acc=0.2010, loss=1.4540, lr=3.70e-05]
+Epoch 002 | Train Loss: 1.4594  Train Acc: 0.2010 | Val Loss:   1.4344  Val Acc:   0.2088
+  ✓ Saved best model  (val_acc=0.2088)
+Epoch 3/40: 100%|██████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:38<00:00,  4.71it/s, acc=0.2088, loss=1.3901, lr=4.12e-10] 
+Epoch 003 | Train Loss: 1.4403  Train Acc: 0.2088 | Val Loss:   1.4288  Val Acc:   0.2165
+  ✓ Saved best model  (val_acc=0.2165)
+[Epoch 4] Unfroze all layers (layer-wise LR decay).
+Epoch 4/40: 100%|██████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:18<00:00,  4.95it/s, acc=0.3175, loss=1.2515, lr=1.65e-05] 
+Epoch 004 | Train Loss: 1.2969  Train Acc: 0.3175 | Val Loss:   1.0303  Val Acc:   0.5023
+  ✓ Saved best model  (val_acc=0.5023)
+Epoch 5/40: 100%|██████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:15<00:00,  5.00it/s, acc=0.5362, loss=0.6911, lr=4.25e-05] 
+Epoch 005 | Train Loss: 1.0184  Train Acc: 0.5362 | Val Loss:   0.6643  Val Acc:   0.7527
+  ✓ Saved best model  (val_acc=0.7527)
+Epoch 6/40: 100%|██████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:14<00:00,  5.01it/s, acc=0.6759, loss=1.1474, lr=5.00e-05] 
+Epoch 006 | Train Loss: 0.8125  Train Acc: 0.6759 | Val Loss:   0.5045  Val Acc:   0.8339
+  ✓ Saved best model  (val_acc=0.8339)
+Epoch 7/40: 100%|██████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:12<00:00,  5.03it/s, acc=0.7101, loss=0.7781, lr=4.96e-05] 
+Epoch 007 | Train Loss: 0.7457  Train Acc: 0.7101 | Val Loss:   0.3820  Val Acc:   0.8911
+  ✓ Saved best model  (val_acc=0.8911)
+Epoch 8/40: 100%|██████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [08:08<00:00,  3.84it/s, acc=0.7358, loss=0.5202, lr=4.89e-05] 
+Epoch 008 | Train Loss: 0.6932  Train Acc: 0.7358 | Val Loss:   0.4095  Val Acc:   0.8675
+Epoch 9/40: 100%|██████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:54<00:00,  4.53it/s, acc=0.7517, loss=0.8236, lr=4.78e-05] 
+Epoch 009 | Train Loss: 0.6572  Train Acc: 0.7517 | Val Loss:   0.3314  Val Acc:   0.9108
+  ✓ Saved best model  (val_acc=0.9108)
+Epoch 10/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:52<00:00,  4.55it/s, acc=0.7570, loss=1.1353, lr=4.62e-05] 
+Epoch 010 | Train Loss: 0.6441  Train Acc: 0.7570 | Val Loss:   0.3540  Val Acc:   0.9125
+  ✓ Saved best model  (val_acc=0.9125)
+Epoch 11/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:47<00:00,  4.60it/s, acc=0.7699, loss=0.4958, lr=4.44e-05] 
+Epoch 011 | Train Loss: 0.6167  Train Acc: 0.7699 | Val Loss:   0.2939  Val Acc:   0.9351
+  ✓ Saved best model  (val_acc=0.9351)
+Epoch 12/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:48<00:00,  4.59it/s, acc=0.7761, loss=0.7281, lr=4.22e-05] 
+Epoch 012 | Train Loss: 0.6019  Train Acc: 0.7761 | Val Loss:   0.3035  Val Acc:   0.9344
+Epoch 13/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [07:45<00:00,  4.03it/s, acc=0.7809, loss=0.8834, lr=3.97e-05] 
+Epoch 013 | Train Loss: 0.5932  Train Acc: 0.7809 | Val Loss:   0.2949  Val Acc:   0.9267
+Epoch 14/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:49<00:00,  4.58it/s, acc=0.7870, loss=0.4519, lr=3.69e-05] 
+Epoch 014 | Train Loss: 0.5776  Train Acc: 0.7870 | Val Loss:   0.2681  Val Acc:   0.9445
+  ✓ Saved best model  (val_acc=0.9445)
+Epoch 15/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:56<00:00,  4.50it/s, acc=0.7910, loss=0.2488, lr=3.40e-05] 
+Epoch 015 | Train Loss: 0.5682  Train Acc: 0.7910 | Val Loss:   0.2821  Val Acc:   0.9392
+Epoch 16/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:51<00:00,  4.55it/s, acc=0.7956, loss=0.8158, lr=3.09e-05] 
+Epoch 016 | Train Loss: 0.5570  Train Acc: 0.7956 | Val Loss:   0.2613  Val Acc:   0.9451
+  ✓ Saved best model  (val_acc=0.9451)
+Epoch 17/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:41<00:00,  4.67it/s, acc=0.8021, loss=1.1343, lr=2.77e-05] 
+Epoch 017 | Train Loss: 0.5458  Train Acc: 0.8021 | Val Loss:   0.2823  Val Acc:   0.9495
+  ✓ Saved best model  (val_acc=0.9495)
+Epoch 18/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:44<00:00,  4.63it/s, acc=0.8032, loss=0.7947, lr=2.45e-05] 
+Epoch 018 | Train Loss: 0.5427  Train Acc: 0.8032 | Val Loss:   0.2565  Val Acc:   0.9427
+Epoch 19/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [07:08<00:00,  4.38it/s, acc=0.8070, loss=0.5947, lr=2.13e-05] 
+Epoch 019 | Train Loss: 0.5329  Train Acc: 0.8070 | Val Loss:   0.2634  Val Acc:   0.9392
+Epoch 20/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [08:22<00:00,  3.73it/s, acc=0.8097, loss=0.5632, lr=1.81e-05] 
+Epoch 020 | Train Loss: 0.5268  Train Acc: 0.8097 | Val Loss:   0.2578  Val Acc:   0.9456
+Epoch 21/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:42<00:00,  4.65it/s, acc=0.8026, loss=0.2670, lr=1.51e-05] 
+Epoch 021 | Train Loss: 0.5369  Train Acc: 0.8026 | Val Loss:   0.2437  Val Acc:   0.9552
+  ✓ Saved best model  (val_acc=0.9552)
+Epoch 22/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:47<00:00,  4.60it/s, acc=0.8192, loss=0.1999, lr=1.22e-05] 
+Epoch 022 | Train Loss: 0.5077  Train Acc: 0.8192 | Val Loss:   0.2442  Val Acc:   0.9472
+Epoch 23/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:44<00:00,  4.63it/s, acc=0.8097, loss=1.0969, lr=9.56e-06] 
+Epoch 023 | Train Loss: 0.5236  Train Acc: 0.8097 | Val Loss:   0.2409  Val Acc:   0.9533
+Epoch 24/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:41<00:00,  4.67it/s, acc=0.8105, loss=0.7358, lr=7.15e-06] 
+Epoch 024 | Train Loss: 0.5192  Train Acc: 0.8105 | Val Loss:   0.2474  Val Acc:   0.9531
+Epoch 25/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:45<00:00,  4.62it/s, acc=0.8199, loss=0.3466, lr=5.04e-06] 
+Epoch 025 | Train Loss: 0.5041  Train Acc: 0.8199 | Val Loss:   0.2294  Val Acc:   0.9551
+Epoch 26/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [07:41<00:00,  4.07it/s, acc=0.8128, loss=0.2345, lr=3.27e-06] 
+Epoch 026 | Train Loss: 0.5116  Train Acc: 0.8128 | Val Loss:   0.2284  Val Acc:   0.9543
+Epoch 27/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:43<00:00,  4.64it/s, acc=0.8156, loss=0.7350, lr=1.86e-06] 
+Epoch 027 | Train Loss: 0.5103  Train Acc: 0.8156 | Val Loss:   0.2358  Val Acc:   0.9587
+  ✓ Saved best model  (val_acc=0.9587)
+Epoch 28/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:40<00:00,  4.68it/s, acc=0.8197, loss=0.3947, lr=8.31e-07] 
+Epoch 028 | Train Loss: 0.4995  Train Acc: 0.8197 | Val Loss:   0.2339  Val Acc:   0.9555
+Epoch 29/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:39<00:00,  4.70it/s, acc=0.8252, loss=0.6640, lr=2.09e-07] 
+Epoch 029 | Train Loss: 0.4920  Train Acc: 0.8252 | Val Loss:   0.2435  Val Acc:   0.9553
+Epoch 30/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:43<00:00,  4.64it/s, acc=0.8175, loss=0.5041, lr=2.00e-10] 
+Epoch 030 | Train Loss: 0.5059  Train Acc: 0.8175 | Val Loss:   0.2414  Val Acc:   0.9575
+0e-10]
+Epoch 030 | Train Loss: 0.5059  Train Acc: 0.8175 | Val Loss:   0.2414  Val Acc:   0.9575
+[Epoch 31] SWA phase started.
+Epoch 31/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [07:19<00:00,  4.26it/s, acc=0.8230, loss=0.7483, lr=1.05e-06]
+Epoch 031 | Train Loss: 0.4949  Train Acc: 0.8230 | Val Loss:   0.2309  Val Acc:   0.9585
+Epoch 32/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:54<00:00,  4.52it/s, acc=0.8159, loss=0.3880, lr=1.00e-07]
+Epoch 032 | Train Loss: 0.5065  Train Acc: 0.8159 | Val Loss:   0.2300  Val Acc:   0.9592
+  ✓ Saved best model  (val_acc=0.9592)
+Epoch 33/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:55<00:00,  4.51it/s, acc=0.8178, loss=0.3243, lr=1.05e-06]
+Epoch 033 | Train Loss: 0.5081  Train Acc: 0.8178 | Val Loss:   0.2282  Val Acc:   0.9565
+Epoch 34/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [07:09<00:00,  4.37it/s, acc=0.8194, loss=0.7691, lr=2.00e-06]
+Epoch 034 | Train Loss: 0.5039  Train Acc: 0.8194 | Val Loss:   0.2341  Val Acc:   0.9573
+Epoch 35/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:46<00:00,  4.61it/s, acc=0.8194, loss=0.3273, lr=1.05e-06]
+Epoch 035 | Train Loss: 0.4984  Train Acc: 0.8194 | Val Loss:   0.2350  Val Acc:   0.9569
+Epoch 36/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:42<00:00,  4.66it/s, acc=0.8208, loss=0.3657, lr=1.00e-07]
+Epoch 036 | Train Loss: 0.5013  Train Acc: 0.8208 | Val Loss:   0.2288  Val Acc:   0.9580
+Epoch 37/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:48<00:00,  4.59it/s, acc=0.8158, loss=0.8316, lr=1.05e-06]
+Epoch 037 | Train Loss: 0.5083  Train Acc: 0.8158 | Val Loss:   0.2360  Val Acc:   0.9576
+Epoch 38/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:48<00:00,  4.59it/s, acc=0.8171, loss=0.5027, lr=2.00e-06]
+Epoch 038 | Train Loss: 0.5072  Train Acc: 0.8171 | Val Loss:   0.2346  Val Acc:   0.9561
+Epoch 39/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:49<00:00,  4.57it/s, acc=0.8251, loss=0.6615, lr=1.05e-06]
+Epoch 039 | Train Loss: 0.4920  Train Acc: 0.8251 | Val Loss:   0.2438  Val Acc:   0.9544
+Epoch 40/40: 100%|█████████████████████████████████████████████████████████████████████████████████████| 1875/1875 [06:50<00:00,  4.57it/s, acc=0.8184, loss=1.1129, lr=1.00e-07]
+Epoch 040 | Train Loss: 0.5042  Train Acc: 0.8184 | Val Loss:   0.2501  Val Acc:   0.9555
+
+Updating SWA BatchNorm statistics on training data …
+SWA model → outputs0/swa_model.pth
