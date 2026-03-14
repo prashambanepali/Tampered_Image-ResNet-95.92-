@@ -41,7 +41,7 @@ CLASS_NAMES = [
     "splicing",
 ]
 
-IMAGE_PATH = r"C:\Tampered_9channel\Unseen_coco_images\COCO_DF_S000B00000_00024776.jpg"
+IMAGE_PATH = r"C:\Tampered_9channel\Unseen_coco_images\COCO_DF_C100B00000_00623566.jpg"
 MODEL_PATH = r"outputs0\swa_model.pth"
 OUTPUT_DIR = "localization_output"
 
